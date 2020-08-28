@@ -2,6 +2,9 @@ module RedmineOpenidConnect
   module ApplicationControllerPatch
     def require_login
       return super unless OicSession.enabled?
+      if ! params[:ssologin].present?
+        return super
+      end
 
       if !User.current.logged?
         if request.get?

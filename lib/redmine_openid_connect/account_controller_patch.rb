@@ -5,6 +5,9 @@ module RedmineOpenidConnect
       if OicSession.disabled? || params[:local_login].present? || request.post?
         return super
       end
+      if ! params[:ssologin].present?
+        return super
+      end
 
       redirect_to oic_login_url
     end
@@ -22,7 +25,7 @@ module RedmineOpenidConnect
     rescue ActiveRecord::RecordNotFound => e
       redirect_to oic_local_logout_url
     end
-    
+
     # performs redirect to SSO server
     def oic_login
       if session[:oic_session_id].blank?
