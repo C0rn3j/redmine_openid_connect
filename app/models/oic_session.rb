@@ -124,7 +124,10 @@ class OicSession < ActiveRecord::Base
     if user["resource_access"].present? && user["resource_access"][client_config['client_id']].present?
       kc_is_in_role = user["resource_access"][client_config['client_id']]["roles"].include?(role)
     end
-    return true if kc_is_in_role 
+    if user["groups"].present?
+      kc_is_in_role = user["groups"].include?(role)
+    end
+    return true if kc_is_in_role
   end
 
   def authorized?
@@ -154,7 +157,7 @@ class OicSession < ActiveRecord::Base
       # keycloak way...
       return true if check_keycloak_role client_config['admin_group']
     end
-    
+
     return false
   end
 
@@ -220,7 +223,7 @@ class OicSession < ActiveRecord::Base
       'session_state' => session_state,
       'post_logout_redirect_uri' => "#{host_name}/oic/local_logout",
     }
-    if id_token.present? 
+    if id_token.present?
       query['id_token_hint'] = id_token
     end
    return query
@@ -239,7 +242,7 @@ class OicSession < ActiveRecord::Base
   end
 
   def scopes
-    if client_config["scopes"].nil? 
+    if client_config["scopes"].nil?
       return "openid profile email user_name"
     else
       client_config["scopes"].split(',').each(&:strip).join(' ')
